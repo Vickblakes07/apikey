@@ -1,20 +1,17 @@
-const express = require("express");
-const cors = require("cors");
-const productsRoutes = require("./routes/products");
-const apiKeyMiddleware = require("./middleware/apiKey");
+const apiKeyMiddleware = (req, res, next) => {
+  const apiKey = req.headers["x-api-key"];
 
-const app = express();
+  console.log("Header API Key:", apiKey); // Debug log
 
+  if (!apiKey) {
+    return res.status(401).json({ message: "API key required" });
+  }
 
-app.use(cors());
-app.use(express.json());
+  if (apiKey !== process.env.API_KEY) {
+    return res.status(403).json({ message: "Invalid API key" });
+  }
 
+  next();
+};
 
-app.use("/api/products", apiKeyMiddleware, productsRoutes);
-
-
-app.get("/", (req, res) => {
-  res.json({ message: "Welcome to E-commerce API (Structured Version)" });
-});
-
-module.exports = app;
+module.exports = apiKeyMiddleware;
